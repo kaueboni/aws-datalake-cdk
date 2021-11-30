@@ -47,8 +47,8 @@ class DatabricksStack(core.Stack):
                         "s3:PutObjectAcl",
                     ],
                     resources=[
-                        f"arn:aws:s3:::s3-belisco-turma-6-{self.deploy_env}-data-lake-*",
-                        f"arn:aws:s3:::s3-belisco-turma-6-{self.deploy_env}-data-lake-*/*",
+                        f"arn:aws:s3:::s3-bucket-{self.deploy_env}-data-lake-*",
+                        f"arn:aws:s3:::s3-bucket-{self.deploy_env}-data-lake-*/*",
                     ],
                 ),
                 iam.PolicyStatement(
@@ -88,13 +88,13 @@ class DatabricksStack(core.Stack):
             instance_profile_name=f"iam-{self.deploy_env}-databricks-data-lake-access-instance-profile",
             roles=[access_role.role_name],
         )
-
+        
         cross_account_role = iam.Role.from_role_arn(
             scope=self,
             id="databricks-cross-account",
-            role_arn="arn:aws:iam::480800208880:role/db-a205e963818fcee8fb1136385513e11a-iam-role",
+            role_arn="arn:aws:iam::764627418491:role/db-d1a31fd085cf7cbd0ee321f2e13b64d3-iam-role",
         )
-
+        
         cross_account_policy_data_access = iam.Policy(
             self,
             id=f"iam-{self.deploy_env}-databricks-cross-account-policy-data-access",

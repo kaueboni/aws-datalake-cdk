@@ -2,8 +2,8 @@ import os
 
 from aws_cdk import core
 
-from bootcamp_turma_6_data_platform.data_lake.base import BaseDataLakeBucket
-from bootcamp_turma_6_data_platform.glue_catalog.base import (
+from aws_datalake_cdk.data_lake.base import BaseDataLakeBucket
+from aws_datalake_cdk.glue_catalog.base import (
     BaseDataLakeGlueDatabase,
     BaseDataLakeGlueRole,
     BaseGlueCrawler,
@@ -16,11 +16,11 @@ class GlueCatalogStack(core.Stack):
         self,
         scope: core.Construct,
         raw_data_lake_bucket: BaseDataLakeBucket,
-        processed_data_lake_bucket: BaseDataLakeBucket,
+        trusted_data_lake_bucket: BaseDataLakeBucket,
         **kwargs,
     ) -> None:
         self.raw_data_lake_bucket = raw_data_lake_bucket
-        self.processed_data_lake_bucket = processed_data_lake_bucket
+        self.trusted_data_lake_bucket = trusted_data_lake_bucket
         self.deploy_env = os.environ["ENVIRONMENT"]
         super().__init__(scope, id=f"{self.deploy_env}-glue-catalog-stack", **kwargs)
 
@@ -28,8 +28,8 @@ class GlueCatalogStack(core.Stack):
             self, data_lake_bucket=self.raw_data_lake_bucket
         )
 
-        self.processed_database = BaseDataLakeGlueDatabase(
-            self, data_lake_bucket=self.processed_data_lake_bucket
+        self.trusted_database = BaseDataLakeGlueDatabase(
+            self, data_lake_bucket=self.trusted_data_lake_bucket
         )
 
         self.role = BaseDataLakeGlueRole(self, data_lake_bucket=self.raw_data_lake_bucket)

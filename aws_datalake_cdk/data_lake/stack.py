@@ -37,8 +37,6 @@ class DataLakeStack(core.Stack):
             enabled=True,
         )
 
-        self.data_lake_raw_processed = BaseDataLakeBucket(
-            self, layer=DataLakeLayer.PROCESSED
-        )
+        self.data_lake_raw_trusted = BaseDataLakeBucket(self, layer=DataLakeLayer.TRUSTED)
 
-        self.data_lake_raw_curated = BaseDataLakeBucket(self, layer=DataLakeLayer.CURATED)
+        self.data_lake_raw_refined = BaseDataLakeBucket(self, layer=DataLakeLayer.REFINED)

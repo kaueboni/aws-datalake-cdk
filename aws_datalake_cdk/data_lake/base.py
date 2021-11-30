@@ -5,8 +5,8 @@ from aws_cdk import aws_s3 as s3, core
 
 class DataLakeLayer(Enum):
     RAW = "raw"
-    PROCESSED = "processed"
-    CURATED = "curated"
+    TRUSTED = "trusted"
+    REFINED = "refined"
 
 
 class BaseDataLakeBucket(s3.Bucket):
@@ -14,7 +14,7 @@ class BaseDataLakeBucket(s3.Bucket):
         self.layer = layer
         self.deploy_env = scope.deploy_env
         self.obj_name = (
-            f"s3-belisco-turma-6-{self.deploy_env}-data-lake-{self.layer.value}"
+            f"s3-bucket-{self.deploy_env}-data-lake-{self.layer.value}"
         )
 
         super().__init__(

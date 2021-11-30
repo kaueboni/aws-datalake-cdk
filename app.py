@@ -1,34 +1,32 @@
-#!/usr/bin/env python3
 import os
-
-from aws_cdk import core as cdk
-
-# For consistency with TypeScript code, `cdk` is the preferred import name for
-# the CDK's core module.  The following line also imports it as `core` for use
-# with examples from the CDK Developer's Guide, which are in the process of
-# being updated to use `cdk`.  You may delete this import if you don't need it.
 from aws_cdk import core
 
-from aws_datalake_cdk.aws_datalake_cdk_stack import AwsDatalakeCdkStack
+from aws_datalake_cdk.common_stack import CommonStack
+from aws_datalake_cdk.data_lake.stack import DataLakeStack
+from aws_datalake_cdk.databricks.stack import DatabricksStack
+from aws_datalake_cdk.glue_catalog.stack import GlueCatalogStack
+from aws_datalake_cdk.kinesis.stack import KinesisStack
+from aws_datalake_cdk.redshift.stack import RedshiftStack
 
+os.environ["ENVIRONMENT"] = 'aws-lab'
 
 app = core.App()
-AwsDatalakeCdkStack(app, "AwsDatalakeCdkStack",
-    # If you don't specify 'env', this stack will be environment-agnostic.
-    # Account/Region-dependent features and context lookups will not work,
-    # but a single synthesized template can be deployed anywhere.
-
-    # Uncomment the next line to specialize this stack for the AWS Account
-    # and Region that are implied by the current CLI configuration.
-
-    #env=core.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION')),
-
-    # Uncomment the next line if you know exactly what Account and Region you
-    # want to deploy the stack to. */
-
-    #env=core.Environment(account='123456789012', region='us-east-1'),
-
-    # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
-    )
+data_lake_stack = DataLakeStack(app)
+common_stack = CommonStack(app)
+kinesis_stack = KinesisStack(
+    app, data_lake_raw_bucket=data_lake_stack.data_lake_raw_bucket
+)
+glue_catalog_stack = GlueCatalogStack(
+    app,
+    raw_data_lake_bucket=data_lake_stack.data_lake_raw_bucket,
+    trusted_data_lake_bucket=data_lake_stack.data_lake_raw_trusted,
+)
+databricks_stack = DatabricksStack(app)
+redshift_stack = RedshiftStack(
+    app,
+    common_stack=common_stack,
+    data_lake_raw=data_lake_stack.data_lake_raw_bucket,
+    data_lake_trusted=data_lake_stack.data_lake_raw_trusted,
+)
 
 app.synth()

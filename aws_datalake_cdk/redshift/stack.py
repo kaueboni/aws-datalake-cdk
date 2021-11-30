@@ -2,30 +2,29 @@ import os
 
 from aws_cdk import core
 from aws_cdk import aws_redshift as redshift, aws_ec2 as ec2, aws_iam as iam
-from bootcamp_turma_6_data_platform.data_lake.base import BaseDataLakeBucket
+from aws_datalake_cdk.data_lake.base import BaseDataLakeBucket
 
-from bootcamp_turma_6_data_platform.common_stack import CommonStack
+from aws_datalake_cdk.common_stack import CommonStack
 
 """
 CREATE EXTERNAL SCHEMA data_lake_raw
 FROM DATA CATALOG
-DATABASE 'glue_belisco_develop_data_lake_raw'
+DATABASE 'glue_kaue-bonilha_develop_data_lake_raw'
 REGION 'us-east-1'
 IAM_ROLE 'arn:aws:iam::820187792016:role/develop-redshift-stack-iamdevelopredshiftspectrumr-SMTW4PNGK8YI'
 """
-
 
 class SpectrumRole(iam.Role):
     def __init__(
         self,
         scope: core.Construct,
         data_lake_raw: BaseDataLakeBucket,
-        data_lake_processed: BaseDataLakeBucket,
+        data_lake_trusted: BaseDataLakeBucket,
         **kwargs,
     ) -> None:
         self.deploy_env = os.environ["ENVIRONMENT"]
         self.data_lake_raw = data_lake_raw
-        self.data_lake_processed = data_lake_processed
+        self.data_lake_trusted = data_lake_trusted
 
         super().__init__(
             scope,
@@ -45,8 +44,8 @@ class SpectrumRole(iam.Role):
                     resources=[
                         self.data_lake_raw.bucket_arn,
                         f"{self.data_lake_raw.bucket_arn}/*",
-                        self.data_lake_processed.bucket_arn,
-                        f"{self.data_lake_processed.bucket_arn}/*",
+                        self.data_lake_trusted.bucket_arn,
+                        f"{self.data_lake_trusted.bucket_arn}/*",
                     ],
                 ),
             ],
@@ -59,14 +58,14 @@ class RedshiftStack(core.Stack):
         self,
         scope: core.Construct,
         data_lake_raw: BaseDataLakeBucket,
-        data_lake_processed: BaseDataLakeBucket,
+        data_lake_trusted: BaseDataLakeBucket,
         common_stack: CommonStack,
         **kwargs,
     ) -> None:
         self.common_stack = common_stack
         self.data_lake_raw = data_lake_raw
         self.deploy_env = os.environ["ENVIRONMENT"]
-        self.data_lake_processed = data_lake_processed
+        self.data_lake_trusted = data_lake_trusted
         super().__init__(scope, id=f"{self.deploy_env}-redshift-stack", **kwargs)
 
         self.redshift_sg = ec2.SecurityGroup(
@@ -88,8 +87,8 @@ class RedshiftStack(core.Stack):
 
         self.redshift_cluster = redshift.Cluster(
             self,
-            f"belisco-{self.deploy_env}-redshift",
-            cluster_name=f"belisco-{self.deploy_env}-redshift",
+            f"kaue-bonilha-{self.deploy_env}-redshift",
+            cluster_name=f"kaue-bonilha-{self.deploy_env}-redshift",
             vpc=self.common_stack.custom_vpc,
             cluster_type=redshift.ClusterType.MULTI_NODE,
             node_type=redshift.NodeType.DC2_LARGE,
@@ -98,7 +97,7 @@ class RedshiftStack(core.Stack):
             removal_policy=core.RemovalPolicy.DESTROY,
             master_user=redshift.Login(master_username="admin"),
             publicly_accessible=True,
-            roles=[SpectrumRole(self, self.data_lake_raw, self.data_lake_processed)],
+            roles=[SpectrumRole(self, self.data_lake_raw, self.data_lake_trusted)],
             security_groups=[self.redshift_sg],
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
         )

@@ -3,7 +3,7 @@ from aws_cdk import (
     aws_glue as glue,
     aws_iam as iam,
 )
-from bootcamp_turma_6_data_platform.data_lake.base import BaseDataLakeBucket
+from aws_datalake_cdk.data_lake.base import BaseDataLakeBucket
 
 
 class BaseDataLakeGlueDatabase(glue.Database):
@@ -16,7 +16,7 @@ class BaseDataLakeGlueDatabase(glue.Database):
     ) -> None:
         self.data_lake_bucket = data_lake_bucket
         self.deploy_env = scope.deploy_env
-        self.obj_name = f"glue-belisco-{self.deploy_env}-data-lake-{self.data_lake_bucket.layer.value}"
+        self.obj_name = f"glue-kaue-bonilha-{self.deploy_env}-data-lake-{self.data_lake_bucket.layer.value}"
 
         super().__init__(
             scope,
